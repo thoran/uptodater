@@ -2,12 +2,15 @@
 # uptodater
 
 # 20210730
-# 0.0.0
+# 0.0.1
 
 # Description: A general purpose script for updating code repositories automatically.
 
 # Notes:
 # 1. First go-round will be for a single repository and assumes that we are in the root of the repository.
+
+# Changes:
+# 1. Removed dry-run aspect.
 
 require 'Kernel/run'
 
@@ -26,7 +29,7 @@ end
 
 def exectute_instructions(commands)
   commands.each do |command|
-    Kernel.run(command, show: true, dry_run: true)
+    Kernel.run(command, show: true)
   end
 end
 
