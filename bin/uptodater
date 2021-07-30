@@ -2,22 +2,92 @@
 # uptodater
 
 # 20210730
-# 0.2.0
+# 0.3.0
 
 # Description: A general purpose script for updating code repositories automatically.
 
 # Notes:
-# 1. First go-round will be for a single repository and assumes that we are in the root of the repository.
+# 1. First goes-round will be for a single repository and assumes that we are in the root of the repository.
 
-# Changes since 0.1:
-# 0: + Sorbet updating
-# 1. Re-order the git commands to be a bit more sensible, though it makes no practical difference.
-# 2. + update_sorbet_commands(), sorbet_directory_present?
-# 3. ~ main() to include running the sorbet updating code.
+# Changes since 0.2:
+# 0: Creates a PR on Github
+# 1. Copied a bunch of code from `git-boot` which really should be wrapped up into a class or classes.
+# 2. + octokit_client()
+# 3. ~ main(): + octokit_client.create_pull_request
 
 require 'date'
 require 'git.rb'
+require 'impuri'
 require 'Kernel/run'
+require 'octokit'
+require 'switches.rb'
+
+# GITHUB CODE
+
+def switches
+  @switches ||= Switches.new do |s|
+    s.set(:t, :token, :access_token, :personal_access_token)
+    s.set(:n, :note, :token_note, :access_token_note)
+    s.set(:o, :otp, :one_time_password)
+  end
+end
+
+def impuri
+  ImpURI.new(ARGV[0])
+end
+
+def supplied_access_token
+  switches.access_token
+end
+
+def supplied_stored_access_token_filename
+  if switches.access_token_note
+    File.expand_path(File.join('~', '.config', 'github', "#{switches.access_token_note}.token"))
+  end
+end
+
+def default_stored_access_token_filename
+  Dir[File.expand_path(File.join('~', '.config', 'github', '*.token'))].first
+end
+
+def stored_access_token_filename
+  supplied_stored_access_token_filename || default_stored_access_token_filename
+end
+
+def stored_access_token
+  File.read(stored_access_token_filename).strip
+end
+
+def words(filename = '/usr/share/dict/words')
+  @words ||= File.collect(filename){|line| line.chomp}
+end
+
+def random_word_for_authorization_note
+  words.sample
+end
+
+def authorization
+  octokit_client = Octokit::Client.new(login: impuri.username, password: impuri.password)
+  if switches.one_time_password
+    octokit_client.create_authorization(scopes: ['public_repo'], note: random_word_for_authorization_note, headers: {'X-GitHub-OTP' => one_time_password})
+  else
+    octokit_client.create_authorization(scopes: ['public_repo'], note: random_word_for_authorization_note)
+  end
+end
+
+def on_the_fly_access_token
+  authorization.token
+end
+
+def access_token
+  supplied_access_token || stored_access_token || on_the_fly_access_token
+end
+
+def repository_name
+  Kernel.run('basename `git rev-parse --show-toplevel`')
+end
+
+# UPDATING CODE
 
 def sorbet_directory_present?
   File.directory?('./sorbet')
@@ -54,12 +124,30 @@ def exectute_instructions(commands)
   end
 end
 
+def octokit_client
+  @octokit_client ||= Octokit::Client.new(access_token: access_token)
+end
+
 def main
   if sorbet_directory_present?
     exectute_instructions(update_sorbet_commands)
+    octokit_client.create_pull_request(
+      repository_name,
+      Git::Branch.default,
+      "uptodaterd-sorbet-#{Date.today}",
+      "Sorbet uptodater'd on #{Date.today}",
+      "Sorbet uptodater'd on #{Date.today}",
+    )
   end
   if gemfile_lock_present?
     exectute_instructions(update_gems_commands)
+    octokit_client.create_pull_request(
+      repository_name,
+      Git::Branch.default,
+      "uptodaterd-gems-#{Date.today}",
+      "Gems uptodater'd on #{Date.today}",
+      "Gems uptodater'd on #{Date.today}",
+    )
   end
 end
 
