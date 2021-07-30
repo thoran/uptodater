@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+# uptodater
+
+# 20210730
+# 0.0.0
+
+# Description: A general purpose script for updating code repositories automatically.
+
+# Notes:
+# 1. First go-round will be for a single repository and assumes that we are in the root of the repository.
+
+require 'Kernel/run'
+
+def gemfile_lock_present?
+  File.exist?('./Gemfile.lock')
+end
+
+def update_gems_commands
+  [
+    'rm Gemfile.lock',
+    'bundle install',
+    'git add .',
+    'git commit -m "uptodater\'d"',
+  ]
+end
+
+def exectute_instructions(commands)
+  commands.each do |command|
+    Kernel.run(command, show: true, dry_run: true)
+  end
+end
+
+def main
+  if gemfile_lock_present?
+    exectute_instructions(update_gems_commands)
+  end
+end
+
+main
