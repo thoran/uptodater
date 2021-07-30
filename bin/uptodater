@@ -2,16 +2,21 @@
 # uptodater
 
 # 20210730
-# 0.0.1
+# 0.1.0
 
 # Description: A general purpose script for updating code repositories automatically.
 
 # Notes:
 # 1. First go-round will be for a single repository and assumes that we are in the root of the repository.
 
-# Changes:
-# 1. Removed dry-run aspect.
+# Changes since 0.0:
+# 0: Creates a new branch and commits changes to that.
+# 1. + require 'git.rb', so as to determine the default branch name.
+# 2. + require 'date', so as to be able to label the new branch.
+# 3. ~ update_gems_commands(), do some work with git.
 
+require 'date'
+require 'git.rb'
 require 'Kernel/run'
 
 def gemfile_lock_present?
@@ -23,13 +28,15 @@ def update_gems_commands
     'rm Gemfile.lock',
     'bundle install',
     'git add .',
-    'git commit -m "uptodater\'d"',
+    "git checkout #{Git::Branch.default}",
+    "git checkout -b uptodaterd-#{Date.today}",
+    "git commit -m \"uptodater'd on #{Date.today}\"",
   ]
 end
 
 def exectute_instructions(commands)
   commands.each do |command|
-    Kernel.run(command, show: true)
+    Kernel.run(command, show: true, dry_run: true)
   end
 end
 
