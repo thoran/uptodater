@@ -2,7 +2,7 @@
 # uptodater
 
 # 20210730
-# 0.1.0
+# 0.1.1
 
 # Description: A general purpose script for updating code repositories automatically.
 
@@ -14,6 +14,8 @@
 # 1. + require 'git.rb', so as to determine the default branch name.
 # 2. + require 'date', so as to be able to label the new branch.
 # 3. ~ update_gems_commands(), do some work with git.
+# 1: Remove dry_run: true.
+# 4. ~ execute_instructions()
 
 require 'date'
 require 'git.rb'
@@ -36,7 +38,7 @@ end
 
 def exectute_instructions(commands)
   commands.each do |command|
-    Kernel.run(command, show: true, dry_run: true)
+    Kernel.run(command, show: true)
   end
 end
 
