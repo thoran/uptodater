@@ -2,24 +2,36 @@
 # uptodater
 
 # 20210730
-# 0.1.1
+# 0.2.0
 
 # Description: A general purpose script for updating code repositories automatically.
 
 # Notes:
 # 1. First go-round will be for a single repository and assumes that we are in the root of the repository.
 
-# Changes since 0.0:
-# 0: Creates a new branch and commits changes to that.
-# 1. + require 'git.rb', so as to determine the default branch name.
-# 2. + require 'date', so as to be able to label the new branch.
-# 3. ~ update_gems_commands(), do some work with git.
-# 1: Remove dry_run: true.
-# 4. ~ execute_instructions()
+# Changes since 0.1:
+# 0: + Sorbet updating
+# 1. Re-order the git commands to be a bit more sensible, though it makes no practical difference.
+# 2. + update_sorbet_commands(), sorbet_directory_present?
+# 3. ~ main() to include running the sorbet updating code.
 
 require 'date'
 require 'git.rb'
 require 'Kernel/run'
+
+def sorbet_directory_present?
+  File.directory?('./sorbet')
+end
+
+def update_sorbet_commands
+  [
+    './script/srb-update',
+    "git checkout #{Git::Branch.default}",
+    "git checkout -b uptodaterd-#{Date.today}",
+    'git add .',
+    "git commit -m \"uptodater'd sorbet on #{Date.today}\"",
+  ]
+end
 
 def gemfile_lock_present?
   File.exist?('./Gemfile.lock')
@@ -29,10 +41,10 @@ def update_gems_commands
   [
     'rm Gemfile.lock',
     'bundle install',
-    'git add .',
     "git checkout #{Git::Branch.default}",
-    "git checkout -b uptodaterd-#{Date.today}",
-    "git commit -m \"uptodater'd on #{Date.today}\"",
+    "git checkout -b uptodaterd-gems-#{Date.today}",
+    'git add .',
+    "git commit -m \"uptodater'd gems on #{Date.today}\"",
   ]
 end
 
@@ -43,6 +55,9 @@ def exectute_instructions(commands)
 end
 
 def main
+  if sorbet_directory_present?
+    exectute_instructions(update_sorbet_commands)
+  end
   if gemfile_lock_present?
     exectute_instructions(update_gems_commands)
   end
