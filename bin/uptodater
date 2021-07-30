@@ -2,7 +2,7 @@
 # uptodater
 
 # 20210730
-# 0.3.0
+# 0.3.1
 
 # Description: A general purpose script for updating code repositories automatically.
 
@@ -14,6 +14,8 @@
 # 1. Copied a bunch of code from `git-boot` which really should be wrapped up into a class or classes.
 # 2. + octokit_client()
 # 3. ~ main(): + octokit_client.create_pull_request
+# 1: Typo fix
+# 4. /exectute_instructions/execute_instructions/
 
 require 'date'
 require 'git.rb'
@@ -118,7 +120,7 @@ def update_gems_commands
   ]
 end
 
-def exectute_instructions(commands)
+def execute_instructions(commands)
   commands.each do |command|
     Kernel.run(command, show: true)
   end
@@ -130,7 +132,7 @@ end
 
 def main
   if sorbet_directory_present?
-    exectute_instructions(update_sorbet_commands)
+    execute_instructions(update_sorbet_commands)
     octokit_client.create_pull_request(
       repository_name,
       Git::Branch.default,
@@ -140,7 +142,7 @@ def main
     )
   end
   if gemfile_lock_present?
-    exectute_instructions(update_gems_commands)
+    execute_instructions(update_gems_commands)
     octokit_client.create_pull_request(
       repository_name,
       Git::Branch.default,
