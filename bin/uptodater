@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 # uptodater
 
-# 20210730
-# 0.3.1
+# 20210802
+# 0.3.2
 
 # Description: A general purpose script for updating code repositories automatically.
 
@@ -16,6 +16,8 @@
 # 3. ~ main(): + octokit_client.create_pull_request
 # 1: Typo fix
 # 4. /exectute_instructions/execute_instructions/
+# 2: Fix branch name when updating sorbet
+# 5. ~ update_sorbet_commands()
 
 require 'date'
 require 'git.rb'
@@ -99,7 +101,7 @@ def update_sorbet_commands
   [
     './script/srb-update',
     "git checkout #{Git::Branch.default}",
-    "git checkout -b uptodaterd-#{Date.today}",
+    "git checkout -b uptodaterd-sorbet-#{Date.today}",
     'git add .',
     "git commit -m \"uptodater'd sorbet on #{Date.today}\"",
   ]
