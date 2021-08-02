@@ -2,7 +2,7 @@
 # uptodater
 
 # 20210802
-# 0.3.3
+# 0.3.4
 
 # Description: A general purpose script for updating code repositories automatically.
 
@@ -20,6 +20,7 @@
 # 5. ~ update_sorbet_commands()
 # 3: Use `bundle update --all` instead of removing the Gemfile.lock and re-intalling.
 # 4. ~ update_gems_command()
+# 4: + Gemfile.lock (`bundle install`)
 
 require 'date'
 require 'git.rb'
