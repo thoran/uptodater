@@ -2,7 +2,7 @@
 # uptodater
 
 # 20210802
-# 0.3.2
+# 0.3.3
 
 # Description: A general purpose script for updating code repositories automatically.
 
@@ -18,6 +18,8 @@
 # 4. /exectute_instructions/execute_instructions/
 # 2: Fix branch name when updating sorbet
 # 5. ~ update_sorbet_commands()
+# 3: Use `bundle update --all` instead of removing the Gemfile.lock and re-intalling.
+# 4. ~ update_gems_command()
 
 require 'date'
 require 'git.rb'
@@ -113,8 +115,7 @@ end
 
 def update_gems_commands
   [
-    'rm Gemfile.lock',
-    'bundle install',
+    'bundle update --all',
     "git checkout #{Git::Branch.default}",
     "git checkout -b uptodaterd-gems-#{Date.today}",
     'git add .',
